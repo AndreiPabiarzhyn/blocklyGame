@@ -126,6 +126,8 @@ window.addEventListener("load", function () {
           canvas.classList.add("shake");
           setTimeout(() => canvas.classList.remove("shake"), 500);
           showModal(false, false, "Ты ударился о стену!", images.fail.src);
+          heroPos = { ...startPos }; // <--- ДОБАВЛЕНО
+          drawCanvas();              // <--- ДОБАВЛЕНО
           return;
         }
 
@@ -135,6 +137,9 @@ window.addEventListener("load", function () {
 
     if (tasks[currentTask].requireLoop && !usedLoops) {
       alert("Подсказка: попробуй использовать цикл!");
+      heroPos = { ...startPos }; // <--- ДОБАВЛЕНО
+      crystals = tasks[currentTask].crystals.map((c) => ({ x: c.x, y: c.y })); // <--- восстановить кристаллы
+      drawCanvas();              // <--- ДОБАВЛЕНО
       return;
     }
 
