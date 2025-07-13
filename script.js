@@ -1,4 +1,3 @@
-// === script.js ===
 import { tasks } from './tasks.js';
 
 window.addEventListener("load", function () {
@@ -10,13 +9,15 @@ window.addEventListener("load", function () {
   let commands = [];
   let currentTask = 0;
   let usedLoops = false;
+  let isAnimating = false;
 
   const images = {
     hero: new Image(),
     crystal: new Image(),
     bg: new Image(),
     reward: new Image(),
-    bigReward: new Image()
+    bigReward: new Image(),
+    fail: new Image()
   };
 
   const sounds = {
@@ -29,6 +30,7 @@ window.addEventListener("load", function () {
   images.bg.src = "assets/bg-tile.jpg";
   images.reward.src = "assets/reward.png";
   images.bigReward.src = "assets/big-reward.png";
+  images.fail.src = "assets/ups.png"; // картинка для удара об стену
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
@@ -41,6 +43,10 @@ window.addEventListener("load", function () {
       }
     }
 
+    crystals.forEach((crystal) => {
+      ctx.drawImage(images.crystal, crystal.x * cellSize, crystal.y * cellSize, cellSize, cellSize);
+    });
+
     const heroSize = cellSize * 0.8;
     ctx.drawImage(
       images.hero,
@@ -49,10 +55,94 @@ window.addEventListener("load", function () {
       heroSize,
       heroSize
     );
+  }
 
-    crystals.forEach((crystal) => {
-      ctx.drawImage(images.crystal, crystal.x * cellSize, crystal.y * cellSize, cellSize, cellSize);
-    });
+  async function animateMove(start, end) {
+    isAnimating = true;
+    const steps = 10;
+    for (let i = 1; i <= steps; i++) {
+      heroPos.x = start.x + (end.x - start.x) * (i / steps);
+      heroPos.y = start.y + (end.y - start.y) * (i / steps);
+      drawCanvas();
+      await new Promise(res => setTimeout(res, 40));
+    }
+    heroPos = { ...end };
+    drawCanvas();
+    isAnimating = false;
+  }
+
+  function showModal(success, final = false, message = null, imageOverride = null) {
+    const modal = document.getElementById("resultModal");
+    const title = document.getElementById("resultTitle");
+    const msg = document.getElementById("resultMessage");
+    const content = document.querySelector(".modal-content");
+
+    const oldImg = content.querySelector("img");
+    if (oldImg) oldImg.remove();
+
+    const img = document.createElement("img");
+    img.src = imageOverride || (final ? images.bigReward.src : (success ? images.reward.src : images.fail.src));
+    img.style.maxWidth = "200px";
+    img.style.marginTop = "10px";
+
+    if (success) {
+      sounds.win.play();
+      title.innerText = "Успех!";
+      msg.innerText = final ? "Поздравляем! Все задания выполнены!" : "Задача выполнена!";
+    } else {
+      sounds.fail.play();
+      title.innerText = "Ой...";
+      msg.innerText = message || "Не все кристаллы собраны. Попробуйте ещё раз.";
+    }
+
+    content.appendChild(img);
+    modal.style.display = "block";
+  }
+
+  function checkForLoops(code) {
+    usedLoops = code.includes("for") || code.includes("repeat");
+  }
+
+  async function runCommands() {
+    heroPos = { ...startPos };
+    crystals = tasks[currentTask].crystals.map((c) => ({ x: c.x, y: c.y }));
+    drawCanvas();
+
+    for (let cmd of commands) {
+      if (cmd.action === "collect") {
+        crystals = crystals.filter(c => !(Math.round(c.x) === Math.round(heroPos.x) && Math.round(c.y) === Math.round(heroPos.y)));
+        drawCanvas();
+        await new Promise(res => setTimeout(res, 300));
+      } else {
+        let newX = Math.round(heroPos.x);
+        let newY = Math.round(heroPos.y);
+
+        if (cmd.action === "moveRight") newX++;
+        if (cmd.action === "moveLeft") newX--;
+        if (cmd.action === "moveUp") newY--;
+        if (cmd.action === "moveDown") newY++;
+
+        if (newX < 0 || newY < 0 || newX >= gridSize || newY >= gridSize) {
+          canvas.classList.add("shake");
+          setTimeout(() => canvas.classList.remove("shake"), 500);
+          showModal(false, false, "Ты ударился о стену!", images.fail.src);
+          return;
+        }
+
+        await animateMove(heroPos, { x: newX, y: newY });
+      }
+    }
+
+    if (tasks[currentTask].requireLoop && !usedLoops) {
+      alert("Подсказка: попробуй использовать цикл!");
+      return;
+    }
+
+    const success = crystals.length === 0;
+    showModal(success, currentTask === tasks.length - 1 && success);
+    if (success && currentTask < tasks.length - 1) {
+      setTimeout(() => loadTask(currentTask + 1), 1000);
+    }
   }
 
   function updateTaskUI() {
@@ -88,95 +178,6 @@ window.addEventListener("load", function () {
   window.moveUp = moveUp;
   window.moveDown = moveDown;
   window.collect = collect;
-
-  function showModal(success, final = false, message = null) {
-    const modal = document.getElementById("resultModal");
-    const title = document.getElementById("resultTitle");
-    const msg = document.getElementById("resultMessage");
-    const img = document.createElement("img");
-    img.src = final ? images.bigReward.src : images.reward.src;
-    img.style.maxWidth = "200px";
-    img.style.marginTop = "10px";
-
-    if (success) {
-      sounds.win.play();
-      title.innerText = "Успех!";
-      msg.innerText = final ? "Поздравляем! Все задания выполнены!" : "Задача выполнена!";
-    } else {
-      sounds.fail.play();
-      title.innerText = "Ой...";
-      msg.innerText = message || "Не все кристаллы собраны. Попробуйте ещё раз.";
-    }
-
-    const content = document.querySelector(".modal-content");
-    content.appendChild(img);
-    modal.style.display = "block";
-  }
-
-  function checkForLoops(code) {
-    usedLoops = code.includes("for") || code.includes("repeat");
-  }
-
-  function runCommands() {
-    heroPos = { ...startPos };
-    crystals = tasks[currentTask].crystals.map((c) => ({ x: c.x, y: c.y }));
-    drawCanvas();
-
-    commands.forEach((cmd, index) => {
-      setTimeout(() => {
-        let moved = false;
-        if (cmd.action === "moveRight") {
-          if (heroPos.x < gridSize - 1) {
-            heroPos.x++;
-            moved = true;
-          }
-        } else if (cmd.action === "moveLeft") {
-          if (heroPos.x > 0) {
-            heroPos.x--;
-            moved = true;
-          }
-        } else if (cmd.action === "moveUp") {
-          if (heroPos.y > 0) {
-            heroPos.y--;
-            moved = true;
-          }
-        } else if (cmd.action === "moveDown") {
-          if (heroPos.y < gridSize - 1) {
-            heroPos.y++;
-            moved = true;
-          }
-        } else if (cmd.action === "collect") {
-          crystals = crystals.filter(c => !(c.x === heroPos.x && c.y === heroPos.y));
-          moved = true;
-        }
-
-        if (!moved && cmd.action.startsWith("move")) {
-          canvas.classList.add("shake");
-          setTimeout(() => canvas.classList.remove("shake"), 500);
-          showModal(false, false, "Ты ударился о стену!");
-          commands = [];
-        }
-
-        drawCanvas();
-
-      }, index * 600);
-    });
-
-    setTimeout(() => {
-      const success = crystals.length === 0;
-      if (tasks[currentTask].requireLoop && !usedLoops) {
-        alert("Подсказка: попробуй использовать цикл, это часть задания!");
-        return;
-      }
-      showModal(success, currentTask === tasks.length - 1 && success);
-      if (success && currentTask < tasks.length - 1) {
-        setTimeout(() => loadTask(currentTask + 1), 1000);
-      } else {
-        heroPos = { ...startPos };
-        drawCanvas();
-      }
-    }, commands.length * 600 + 800);
-  }
 
   Blockly.Blocks['when_run'] = {
     init: function () {
@@ -237,6 +238,7 @@ window.addEventListener("load", function () {
   });
 
   document.getElementById("runProgram").addEventListener("click", () => {
+    if (isAnimating) return;
     commands = [];
     const code = Blockly.JavaScript.workspaceToCode(workspace);
     try {
@@ -257,11 +259,8 @@ window.addEventListener("load", function () {
 
   document.getElementById("closeModal").addEventListener("click", () => {
     document.getElementById("resultModal").style.display = "none";
-    const img = document.querySelector(".modal-content img");
-    if (img) img.remove();
   });
 
-  // Показать стартовую модалку при загрузке
   document.getElementById("startModal").style.display = "flex";
   document.getElementById("startGameBtn").addEventListener("click", () => {
     document.getElementById("startModal").style.display = "none";
