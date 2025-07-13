@@ -29,7 +29,7 @@ window.addEventListener("load", function () {
   images.hero.src = "assets/hero.png";
   images.crystal.src = "assets/crystal.png";
   images.bg.src = "assets/bg-tile.jpg";
-  images.reward.src = "assets/reward.png";
+  images.reward.src = "assets/cat-cats.gif";
   images.bigReward.src = "assets/big-reward.png";
   images.fail.src = "assets/ups.png"; // картинка для удара об стену
 
