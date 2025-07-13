@@ -1,0 +1,235 @@
+/* Общие стили */
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #e6ecf0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Левая панель */
+.left-panel {
+  width: 20%;
+  background: #dceeff;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border-right: 1px solid #bbb;
+}
+
+.left-panel h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #0d47a1;
+}
+
+.left-panel p {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.nav-buttons button {
+  width: 48%;
+}
+
+.cool-btn {
+  padding: 10px;
+  font-size: 15px;
+  background: linear-gradient(145deg, #2196f3, #1e88e5);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.cool-btn:hover {
+  transform: scale(1.04);
+  background: #1565c0;
+}
+
+.cool-btn.run {
+  background: linear-gradient(145deg, #43a047, #388e3c);
+}
+
+.cool-btn.run:hover {
+  background: #2e7d32;
+}
+
+/* Центр — Blockly */
+.center-panel {
+  width: 40%;
+  background: #ffffff;
+  padding: 16px;
+  border-right: 1px solid #bbb;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.center-panel h2 {
+  margin: 0 0 10px;
+  color: #333;
+}
+
+#blocklyDiv {
+  flex-grow: 1;
+  min-height: 600px;
+  height: 100%;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  background: #f9f9f9;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Правая панель */
+.right-panel {
+  flex-grow: 1;
+  background: #fff8e1;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.right-panel h2 {
+  margin-bottom: 16px;
+  color: #444;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: auto;
+  max-width: 600px;
+  border: 3px solid #444;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Модальное окно */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 10% auto;
+  padding: 24px;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  font-size: 22px;
+  color: #2e7d32;
+}
+
+.modal-content p {
+  font-size: 16px;
+  margin: 12px 0 24px;
+}
+
+
+/* Стартовая модалка */
+#startModal.modal {
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+#startModal .modal-content {
+  background-color: white;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  animation: popIn 0.3s ease;
+}
+
+#startModal h2 {
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+#startModal p {
+  font-size: 18px;
+  margin-bottom: 25px;
+}
+
+/* Красивая кнопка */
+.fancy-button {
+  background-color: #38bdf8;
+  color: white;
+  font-size: 18px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+}
+
+.fancy-button:hover {
+  background-color: #0ea5e9;
+  transform: scale(1.05);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0% { transform: translate(2px, 1px); }
+  20% { transform: translate(-2px, -1px); }
+  40% { transform: translate(2px, 0px); }
+  60% { transform: translate(-1px, 1px); }
+  80% { transform: translate(1px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.shake {
+  animation: shake 0.4s;
+}

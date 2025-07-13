@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Blockly Hero Game — Улучшено</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Левая панель -->
+    <div class="left-panel">
+      <h2 id="taskTitle">Задача 1: Перемести героя вправо и собери кристалл</h2>
+      <p id="taskDesc">Перемести героя вправо, чтобы собрать кристалл.</p>
+      <div class="nav-buttons">
+        <button id="prevTask" class="cool-btn">← Предыдущая</button>
+        <button id="nextTask" class="cool-btn">Следующая →</button>
+      </div>
+      <button id="resetTask" class="cool-btn">Сначала</button>
+      <button id="runProgram" class="cool-btn run">🚀 Выполнить</button>
+    </div>
+
+    <!-- Центр с Blockly -->
+    <div class="center-panel">
+      <h2>Программа</h2>
+      <div id="blocklyDiv"></div>
+      <xml id="toolbox" style="display: none;">
+        <!--<block type="when_run"></block> -->
+        <block type="move_right"></block>
+        <block type="move_left"></block>
+        <block type="move_up"></block>
+        <block type="move_down"></block>
+        <block type="collect"></block>
+        <block type="controls_repeat_ext">
+          <value name="TIMES">
+            <shadow type="math_number">
+              <field name="NUM">3</field>
+            </shadow>
+          </value>
+        </block>
+      </xml>
+    </div>
+
+    <!-- Правая панель -->
+    <div class="right-panel">
+      <h2>Игровое поле</h2>
+      <canvas id="gameCanvas" width="480" height="480"></canvas>
+    </div>
+  </div>
+
+  <!-- Модальное окно результата -->
+  <div id="resultModal" class="modal">
+    <div class="modal-content">
+      <h3 id="resultTitle">Результат</h3>
+      <p id="resultMessage">Задача выполнена!</p>
+      <button id="closeModal" class="cool-btn">ОК</button>
+    </div>
+  </div>
+
+  <!-- Стартовое модальное окно -->
+<div id="startModal" class="modal" style="display: flex;">
+  <div class="modal-content">
+    <h2>Добро пожаловать!</h2>
+    <p>Пройди все 10 уровней и собери приз 🏆</p>
+    <button id="startGameBtn" class="fancy-button">🚀 Начать игру</button>
+  </div>
+</div>
+
+  <script type="module" src="script.js"></script>
+  <script type="module" src="tasks.js"></script>
+</body>
+</html>
