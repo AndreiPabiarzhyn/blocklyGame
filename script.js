@@ -41,6 +41,10 @@ window.addEventListener("load", function () {
     for (let y = 0; y < gridSize; y++) {
       for (let x = 0; x < gridSize; x++) {
         ctx.drawImage(images.bg, x * cellSize, y * cellSize, cellSize, cellSize);
+        // Рисуем сетку (тонкая серая рамка)
+        ctx.strokeStyle = "rgba(0,0,0,0.15)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
       }
     }
 
