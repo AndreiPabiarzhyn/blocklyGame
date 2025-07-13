@@ -10,6 +10,7 @@ window.addEventListener("load", function () {
   let currentTask = 0;
   let usedLoops = false;
   let isAnimating = false;
+  let shouldResetOnClose = false;
 
   const images = {
     hero: new Image(),
@@ -96,6 +97,7 @@ window.addEventListener("load", function () {
     }
 
     content.appendChild(img);
+    shouldResetOnClose = !success; // перезапускать, если это провал
     modal.style.display = "block";
   }
 
@@ -104,51 +106,54 @@ window.addEventListener("load", function () {
   }
 
   async function runCommands() {
+  heroPos = { ...startPos };
+  crystals = tasks[currentTask].crystals.map((c) => ({ x: c.x, y: c.y }));
+  drawCanvas();
+
+  for (let cmd of commands) {
+    if (cmd.action === "collect") {
+      crystals = crystals.filter(c => !(Math.round(c.x) === Math.round(heroPos.x) && Math.round(c.y) === Math.round(heroPos.y)));
+      drawCanvas();
+      await new Promise(res => setTimeout(res, 300));
+    } else {
+      let newX = Math.round(heroPos.x);
+      let newY = Math.round(heroPos.y);
+
+      if (cmd.action === "moveRight") newX++;
+      if (cmd.action === "moveLeft") newX--;
+      if (cmd.action === "moveUp") newY--;
+      if (cmd.action === "moveDown") newY++;
+
+      if (newX < 0 || newY < 0 || newX >= gridSize || newY >= gridSize) {
+        canvas.classList.add("shake");
+        setTimeout(() => canvas.classList.remove("shake"), 500);
+        showModal(false, false, "Ты ударился о стену!", "assets/ups.png");
+        heroPos = { ...startPos };
+        crystals = tasks[currentTask].crystals.map((c) => ({ x: c.x, y: c.y }));
+        drawCanvas();
+        return;
+      }
+
+      await animateMove(heroPos, { x: newX, y: newY });
+    }
+  }
+
+  if (tasks[currentTask].requireLoop && !usedLoops) {
+    alert("Подсказка: попробуй использовать цикл!");
     heroPos = { ...startPos };
     crystals = tasks[currentTask].crystals.map((c) => ({ x: c.x, y: c.y }));
     drawCanvas();
-
-    for (let cmd of commands) {
-      if (cmd.action === "collect") {
-        crystals = crystals.filter(c => !(Math.round(c.x) === Math.round(heroPos.x) && Math.round(c.y) === Math.round(heroPos.y)));
-        drawCanvas();
-        await new Promise(res => setTimeout(res, 300));
-      } else {
-        let newX = Math.round(heroPos.x);
-        let newY = Math.round(heroPos.y);
-
-        if (cmd.action === "moveRight") newX++;
-        if (cmd.action === "moveLeft") newX--;
-        if (cmd.action === "moveUp") newY--;
-        if (cmd.action === "moveDown") newY++;
-
-        if (newX < 0 || newY < 0 || newX >= gridSize || newY >= gridSize) {
-          canvas.classList.add("shake");
-          setTimeout(() => canvas.classList.remove("shake"), 500);
-          showModal(false, false, "Ты ударился о стену!", images.fail.src);
-          heroPos = { ...startPos }; // <--- ДОБАВЛЕНО
-          drawCanvas();              // <--- ДОБАВЛЕНО
-          return;
-        }
-
-        await animateMove(heroPos, { x: newX, y: newY });
-      }
-    }
-
-    if (tasks[currentTask].requireLoop && !usedLoops) {
-      alert("Подсказка: попробуй использовать цикл!");
-      heroPos = { ...startPos }; // <--- ДОБАВЛЕНО
-      crystals = tasks[currentTask].crystals.map((c) => ({ x: c.x, y: c.y })); // <--- восстановить кристаллы
-      drawCanvas();              // <--- ДОБАВЛЕНО
-      return;
-    }
-
-    const success = crystals.length === 0;
-    showModal(success, currentTask === tasks.length - 1 && success);
-    if (success && currentTask < tasks.length - 1) {
-      setTimeout(() => loadTask(currentTask + 1), 1000);
-    }
+    return;
   }
+
+  const success = crystals.length === 0;
+  showModal(success, currentTask === tasks.length - 1 && success);
+
+  if (success && currentTask < tasks.length - 1) {
+    setTimeout(() => loadTask(currentTask + 1), 1000);
+  }
+}
+
 
   function updateTaskUI() {
     document.getElementById("taskTitle").innerText = `${tasks[currentTask].title}: ${tasks[currentTask].desc}`;
@@ -264,6 +269,13 @@ window.addEventListener("load", function () {
 
   document.getElementById("closeModal").addEventListener("click", () => {
     document.getElementById("resultModal").style.display = "none";
+    if (shouldResetOnClose) {
+    heroPos = { ...startPos };
+    crystals = tasks[currentTask].crystals.map(c => ({ x: c.x, y: c.y }));
+    drawCanvas();
+  }
+
+  shouldResetOnClose = false; // сбросить флаг
   });
 
   document.getElementById("startModal").style.display = "flex";
